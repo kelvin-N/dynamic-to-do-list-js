@@ -6,54 +6,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const taskInput = document.getElementById('task-input');
   const taskList = document.getElementById('task-list');
 
-  // --- Load tasks from Local Storage ---
-  function loadTasks() {
-    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    tasks.forEach(taskText => {
-      addTaskToDOM(taskText);
-    });
-  }
+  // --- Load tasks from Local Storage when page loads ---
+  loadTasks();
 
-  // --- Save tasks to Local Storage ---
-  function saveTasks() {
-    const tasks = [];
-    document.querySelectorAll('#task-list li span').forEach(span => {
-      tasks.push(span.textContent);
-    });
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }
-
-  // --- Helper: Add a task to the DOM ---
-  function addTaskToDOM(taskText) {
-    // Create <li> element
-    const li = document.createElement('li');
-
-    // Add text inside a <span> (for easy retrieval later)
-    const span = document.createElement('span');
-    span.textContent = taskText;
-    li.appendChild(span);
-
-    // Create Remove button
-    const removeBtn = document.createElement('button');
-    removeBtn.textContent = 'Remove';
-    removeBtn.className = 'remove-btn';
-
-    // Add event listener to remove button
-    removeBtn.onclick = function () {
-      taskList.removeChild(li);
-      saveTasks(); // Update storage after removal
-    };
-
-    // Append button to <li>
-    li.appendChild(removeBtn);
-
-    // Append <li> to the task list
-    taskList.appendChild(li);
-  }
-
-  // --- Function to add a new task ---
-  function addTask() {
-    const taskText = taskInput.value.trim();
+  // --- Function to add new task ---
+  function addTask(taskText, save = true) {
+    // If taskText not provided (from manual input), get from input field
+    if (!taskText) {
+      taskText = taskInput.value.trim();
+    }
 
     // Validate input
     if (taskText === "") {
@@ -61,26 +22,58 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Add to DOM
-    addTaskToDOM(taskText);
+    // Create <li> element for the task
+    const li = document.createElement('li');
+    li.textContent = taskText;
 
-    // Save to Local Storage
-    saveTasks();
+    // Create Remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.className = 'remove-btn';
 
-    // Clear input
+    // Add event listener to remove button
+    removeBtn.addEventListener('click', () => {
+      taskList.removeChild(li);
+      removeTaskFromLocalStorage(taskText);
+    });
+
+    // Append remove button to <li>
+    li.appendChild(removeBtn);
+
+    // Append <li> to task list
+    taskList.appendChild(li);
+
+    // Clear input field
     taskInput.value = '';
+
+    // Save to Local Storage (only when manually added)
+    if (save) {
+      const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+      storedTasks.push(taskText);
+      localStorage.setItem('tasks', JSON.stringify(storedTasks));
+    }
   }
 
-  // --- Event listener for button click ---
-  addButton.addEventListener('click', addTask);
+  // --- Function to load tasks from Local Storage ---
+  function loadTasks() {
+    const storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    storedTasks.forEach(task => addTask(task, false)); // don't re-save
+  }
 
-  // --- Event listener for pressing Enter key ---
+  // --- Function to remove task from Local Storage ---
+  function removeTaskFromLocalStorage(taskText) {
+    let storedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    storedTasks = storedTasks.filter(task => task !== taskText);
+    localStorage.setItem('tasks', JSON.stringify(storedTasks));
+  }
+
+  // --- Add event listener for button click ---
+  addButton.addEventListener('click', () => addTask());
+
+  // --- Add event listener for pressing Enter key ---
   taskInput.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
       addTask();
     }
   });
-
-  // --- Load tasks when the page loads ---
-  loadTasks();
 });
