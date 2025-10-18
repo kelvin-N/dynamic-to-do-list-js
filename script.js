@@ -15,11 +15,11 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Create list item (li)
+    // Create new li element
     const li = document.createElement("li");
     li.textContent = taskText;
 
-    // Create Remove Button
+    // Create Remove button
     const removeButton = document.createElement("button");
     removeButton.textContent = "Remove";
     removeButton.className = "remove-btn";
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
       taskList.removeChild(li);
     };
 
-    // Append remove button and list item
+    // Append remove button to li, and li to task list
     li.appendChild(removeButton);
     taskList.appendChild(li);
 
